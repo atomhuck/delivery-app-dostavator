@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Dostavator</string>
+    <string name="login">Вход</string>
+    <string name="id">ID</string>
+    <string name="password">Password</string>
+    <string name="enter_id">Введите ID</string>
+    <string name="enter_password">Введите пароль</string>
+</resources>
