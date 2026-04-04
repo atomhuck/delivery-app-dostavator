@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
 
             NavHost(
                 navController = navController,
-                startDestination = "auth" // Возвращаем регистрацию первой!
+                startDestination = "auth"
             ) {
                 composable("auth") {
                     AuthScreen(onLoginSuccess = {

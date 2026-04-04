@@ -27,7 +27,6 @@ import com.example.dostavator.viewmodel.ShiftViewModel
 fun MainScreen(navController: NavController, viewModel: ShiftViewModel) {
     val purplePrimary = Color(0xFF9139BA)
 
-    // Если курьер уже нажал "На смену", при открытии приложения сразу летим к поиску
     LaunchedEffect(viewModel.isOnShift) {
         if (viewModel.isOnShift) {
             navController.navigate("active_shift")
@@ -45,16 +44,11 @@ fun MainScreen(navController: NavController, viewModel: ShiftViewModel) {
         }
     ) { padding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-                .padding(padding)
-                .padding(horizontal = 20.dp),
+            modifier = Modifier.fillMaxSize().background(Color.White).padding(padding).padding(horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 1. ВЕРНУЛИ ВЕРХНЮЮ ПЛАШКУ ЗАРАБОТКА
             Box(
                 modifier = Modifier
                     .align(Alignment.End)
@@ -74,17 +68,10 @@ fun MainScreen(navController: NavController, viewModel: ShiftViewModel) {
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Картинка курьера
-            Image(
-                painter = painterResource(id = R.drawable.tired_courier),
-                contentDescription = null,
-                modifier = Modifier.size(260.dp),
-                contentScale = ContentScale.Fit
-            )
+            Image(painter = painterResource(id = R.drawable.tired_courier), contentDescription = null, modifier = Modifier.size(260.dp), contentScale = ContentScale.Fit)
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Кнопка выхода на смену
             Button(
                 onClick = {
                     viewModel.startShift()
@@ -94,16 +81,13 @@ fun MainScreen(navController: NavController, viewModel: ShiftViewModel) {
                 colors = ButtonDefaults.buttonColors(containerColor = purplePrimary),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Text("ВЫЙТИ НА СМЕНУ", fontWeight = FontWeight.Bold, color = Color.White)
+                Text("ВЫЙТИ НА СМЕНЕ", fontWeight = FontWeight.Bold, color = Color.White)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 2. ВЕРНУЛИ КНОПКУ ПРИГЛАСИТЬ ДРУГА
             Button(
-                onClick = {
-                    // Здесь будет функционал шеринга или копирования ссылки
-                },
+                onClick = { },
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = purplePrimary),
                 shape = RoundedCornerShape(8.dp)
