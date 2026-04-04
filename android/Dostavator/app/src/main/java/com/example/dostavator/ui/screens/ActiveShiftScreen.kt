@@ -36,23 +36,64 @@ fun ActiveShiftScreen(navController: NavController, viewModel: ShiftViewModel) {
         }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().background(bgColor).padding(padding)) {
-            LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth(), contentPadding = PaddingValues(16.dp)) {
+            LazyColumn(
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                contentPadding = PaddingValues(16.dp)
+            ) {
+                // Блок статистики сверху
                 item {
-                    Card(colors = CardDefaults.cardColors(containerColor = Color.White), modifier = Modifier.fillMaxWidth()) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Surface(color = Color(0xFF9139BA), shape = RoundedCornerShape(99.dp)) {
-                                Text("НА СМЕНЕ", color = Color.White, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp), fontSize = 12.sp)
+                                Text(
+                                    "НА СМЕНЕ",
+                                    color = Color.White,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                                    fontSize = 12.sp
+                                )
                             }
                             Spacer(modifier = Modifier.height(12.dp))
-                            Text("ЗАРАБОТАНО СЕГОДНЯ: ${viewModel.todayEarnings} ₽", fontWeight = FontWeight.Bold)
+                            Text(
+                                "ЗАРАБОТАНО СЕГОДНЯ: ${viewModel.todayEarnings} ₽",
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
+                // ПОЛЕ ПОИСКА С АНИМАЦИЕЙ (ВЕРНУЛ)
+                item {
+                    OutlinedTextField(
+                        value = "",
+                        onValueChange = {},
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("Поиск заказа", color = grayText, fontSize = 14.sp)
+                                SlowJumpingDots(color = grayText)
+                            }
+                        },
+                        leadingIcon = { Icon(Icons.Default.Search, null, tint = grayText) },
+                        enabled = false,
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledBorderColor = Color(0xFFE5E7EB)
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                // ЛОГИКА "ПОКА ПУСТО"
                 if (viewModel.availableOrders.isEmpty()) {
                     item {
-                        Box(modifier = Modifier.fillParentMaxHeight(0.6f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Box(
+                            modifier = Modifier.fillParentMaxHeight(0.6f).fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
                             Text("Пока пусто", color = Color.Gray, fontSize = 18.sp)
                         }
                     }
@@ -64,16 +105,21 @@ fun ActiveShiftScreen(navController: NavController, viewModel: ShiftViewModel) {
                 }
             }
 
-            Button(
-                onClick = {
-                    viewModel.stopShift()
-                    navController.navigate("main") { popUpTo("main") { inclusive = true } }
-                },
-                modifier = Modifier.fillMaxWidth().padding(16.dp).height(48.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444)),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text("ЗАВЕРШЕНИЕ", fontWeight = FontWeight.Bold, color = Color.White)
+            // Кнопка завершения
+            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                Button(
+                    onClick = {
+                        viewModel.stopShift()
+                        navController.navigate("main") {
+                            popUpTo("main") { inclusive = true }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("ЗАВЕРШЕНИЕ", fontWeight = FontWeight.Bold, color = Color.White)
+                }
             }
         }
     }
@@ -81,16 +127,68 @@ fun ActiveShiftScreen(navController: NavController, viewModel: ShiftViewModel) {
 
 @Composable
 fun OrderCard(order: OrderItem, onAcceptClick: () -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color.White), shape = RoundedCornerShape(16.dp)) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(16.dp)
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(text = order.id, color = Color.Gray, fontSize = 14.sp)
                 Text(text = "${order.price} ₽", fontSize = 22.sp, fontWeight = FontWeight.Bold)
             }
-            Text(text = order.address, modifier = Modifier.padding(vertical = 8.dp), fontSize = 14.sp)
-            Button(onClick = onAcceptClick, modifier = Modifier.align(Alignment.End), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9139BA)), shape = RoundedCornerShape(8.dp)) {
-                Text("ВЗЯТЬ ЗАКАЗ", fontSize = 12.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = order.address, fontSize = 14.sp)
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.LocationOn, null, tint = Color.Gray, modifier = Modifier.size(16.dp))
+                    Text(text = "${order.distance} км", color = Color.Gray, fontSize = 14.sp)
+                }
+                Button(
+                    onClick = onAcceptClick,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9139BA)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("ВЗЯТЬ ЗАКАЗ", fontSize = 12.sp)
+                }
             }
+        }
+    }
+}
+
+@Composable
+fun SlowJumpingDots(color: Color) {
+    val infiniteTransition = rememberInfiniteTransition(label = "dots")
+    val dotAnimations = listOf(0, 1, 2).map { index ->
+        infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 0f,
+            animationSpec = infiniteRepeatable(
+                animation = keyframes {
+                    durationMillis = 1200
+                    0f at 0
+                    -4f at 300 // Прыжок вверх
+                    0f at 600
+                },
+                initialStartOffset = StartOffset(index * 200)
+            ),
+            label = "dot"
+        )
+    }
+    Row(modifier = Modifier.padding(start = 4.dp)) {
+        dotAnimations.forEach { anim ->
+            Box(
+                Modifier
+                    .padding(horizontal = 1.5.dp)
+                    .size(3.5.dp)
+                    .offset(y = anim.value.dp)
+                    .background(color, CircleShape)
+            )
         }
     }
 }
