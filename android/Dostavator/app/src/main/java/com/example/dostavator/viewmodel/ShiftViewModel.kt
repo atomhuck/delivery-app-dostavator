@@ -12,19 +12,11 @@ data class OrderItem(
 )
 
 class ShiftViewModel : ViewModel() {
-    val userName = "Алексей"
-
+    var userName by mutableStateOf("Алексей")
     var paymentDetails by mutableStateOf("123456789")
-        private set
-
     var profileImageUri by mutableStateOf<Uri?>(null)
-        private set
-
     var todayEarnings by mutableStateOf(0)
-        private set
-
     var isOnShift by mutableStateOf(false)
-        private set
 
     private val _availableOrders = mutableStateListOf<OrderItem>()
     val availableOrders: List<OrderItem> get() = _availableOrders
@@ -33,7 +25,7 @@ class ShiftViewModel : ViewModel() {
         loadMockOrders()
     }
 
-    private fun loadMockOrders() {
+    fun loadMockOrders() {
         _availableOrders.clear()
         _availableOrders.addAll(
             listOf(
@@ -44,7 +36,6 @@ class ShiftViewModel : ViewModel() {
     }
 
     fun startShift() { isOnShift = true }
-
     fun stopShift() { isOnShift = false }
 
     fun acceptOrder(order: OrderItem) {
@@ -52,12 +43,15 @@ class ShiftViewModel : ViewModel() {
         _availableOrders.remove(order)
     }
 
+    fun updatePaymentDetails(newDetails: String) {
+        paymentDetails = newDetails
+    }
+
     fun updateProfileImage(uri: Uri?) { profileImageUri = uri }
-    fun updatePaymentDetails(newDetails: String) { paymentDetails = newDetails }
 
     fun logout() {
         isOnShift = false
-        profileImageUri = null
         todayEarnings = 0
+        profileImageUri = null
     }
 }

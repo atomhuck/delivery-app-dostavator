@@ -28,7 +28,33 @@ import com.example.dostavator.viewmodel.ShiftViewModel
 @Composable
 fun ProfileScreen(navController: NavController, viewModel: ShiftViewModel) {
     val bgColor = Color(0xFFF9FAFB)
+    var showEditDialog by remember { mutableStateOf(false) }
+    var tempDetails by remember { mutableStateOf(viewModel.paymentDetails) }
     val photoPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { viewModel.updateProfileImage(it) }
+
+    if (showEditDialog) {
+        AlertDialog(
+            onDismissRequest = { showEditDialog = false },
+            title = { Text("Изменить реквизиты") },
+            text = {
+                OutlinedTextField(
+                    value = tempDetails,
+                    onValueChange = { tempDetails = it },
+                    label = { Text("Номер счета/карты") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    viewModel.updatePaymentDetails(tempDetails)
+                    showEditDialog = false
+                }) { Text("Сохранить") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditDialog = false }) { Text("Отмена") }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -62,12 +88,14 @@ fun ProfileScreen(navController: NavController, viewModel: ShiftViewModel) {
             Spacer(modifier = Modifier.height(24.dp))
 
             ProfileItem("Архив") {}
-            ProfileItem("Реквизиты: ${viewModel.paymentDetails}", "(изм)") { /* диалог */ }
+            ProfileItem("Реквизиты: ${viewModel.paymentDetails}", "(изм)") {
+                tempDetails = viewModel.paymentDetails
+                showEditDialog = true
+            }
             ProfileItem("Пригласить друга") {}
 
             ProfileItem("Выйти") {
                 viewModel.logout()
-                // ИСПРАВЛЕНО: navigate("auth") вместо "auth_screen"
                 navController.navigate("auth") {
                     popUpTo(navController.graph.startDestinationId) { inclusive = true }
                     launchSingleTop = true
