@@ -1,8 +1,10 @@
 package com.example.dostavator.viewmodel
 
+import android.app.Application
+import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.*
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 
 data class OrderItem(
     val id: String,
@@ -11,18 +13,38 @@ data class OrderItem(
     val distance: Double
 )
 
-class ShiftViewModel : ViewModel() {
+// Используем AndroidViewModel для доступа к SharedPreferences
+class ShiftViewModel(application: Application) : AndroidViewModel(application) {
+    private val sharedPrefs = application.getSharedPreferences("dostavator_prefs", Context.MODE_PRIVATE)
+
     var userName by mutableStateOf("Алексей")
     var paymentDetails by mutableStateOf("123456789")
     var profileImageUri by mutableStateOf<Uri?>(null)
     var todayEarnings by mutableStateOf(0)
     var isOnShift by mutableStateOf(false)
 
+    // Храним статус логина в памяти
+    var isLoggedIn by mutableStateOf(sharedPrefs.getBoolean("is_logged_in", false))
+        private set
+
     private val _availableOrders = mutableStateListOf<OrderItem>()
     val availableOrders: List<OrderItem> get() = _availableOrders
 
     init {
         loadMockOrders()
+    }
+
+    fun login() {
+        isLoggedIn = true
+        sharedPrefs.edit().putBoolean("is_logged_in", true).apply()
+    }
+
+    fun logout() {
+        isLoggedIn = false
+        isOnShift = false
+        todayEarnings = 0
+        profileImageUri = null
+        sharedPrefs.edit().putBoolean("is_logged_in", false).apply()
     }
 
     fun loadMockOrders() {
@@ -43,15 +65,6 @@ class ShiftViewModel : ViewModel() {
         _availableOrders.remove(order)
     }
 
-    fun updatePaymentDetails(newDetails: String) {
-        paymentDetails = newDetails
-    }
-
+    fun updatePaymentDetails(newDetails: String) { paymentDetails = newDetails }
     fun updateProfileImage(uri: Uri?) { profileImageUri = uri }
-
-    fun logout() {
-        isOnShift = false
-        todayEarnings = 0
-        profileImageUri = null
-    }
 }

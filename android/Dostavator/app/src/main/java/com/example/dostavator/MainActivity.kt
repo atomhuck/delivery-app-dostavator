@@ -19,9 +19,13 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             val shiftViewModel: ShiftViewModel = viewModel()
 
-            NavHost(navController = navController, startDestination = "auth") {
+            // Проверяем статус при запуске: если залогинен — идем в main, если нет — в auth
+            val startDestination = if (shiftViewModel.isLoggedIn) "main" else "auth"
+
+            NavHost(navController = navController, startDestination = startDestination) {
                 composable("auth") {
                     AuthScreen(onLoginSuccess = {
+                        shiftViewModel.login() // Сохраняем вход в SharedPreferences
                         navController.navigate("main") {
                             popUpTo("auth") { inclusive = true }
                         }

@@ -27,36 +27,25 @@ import com.example.dostavator.viewmodel.ShiftViewModel
 fun MainScreen(navController: NavController, viewModel: ShiftViewModel) {
     val purplePrimary = Color(0xFF9139BA)
 
-    // Авто-переход, если смена уже активна (например, при возврате в приложение)
     LaunchedEffect(viewModel.isOnShift) {
         if (viewModel.isOnShift) {
-            navController.navigate("active_shift") {
-                popUpTo("main") { saveState = true }
-            }
+            navController.navigate("active_shift")
         }
     }
 
     Scaffold(
         bottomBar = {
-            BottomNavigationBar(
-                selectedTab = 0,
-                onTabSelected = { index ->
-                    if (index == 1) navController.navigate("profile")
-                }
-            )
+            BottomNavigationBar(selectedTab = 0, onTabSelected = { index ->
+                if (index == 1) navController.navigate("profile")
+            })
         }
     ) { padding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-                .padding(padding)
-                .padding(horizontal = 20.dp),
+            modifier = Modifier.fillMaxSize().background(Color.White).padding(padding).padding(horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Плашка заработка (справа сверху)
             Box(
                 modifier = Modifier
                     .align(Alignment.End)
@@ -76,56 +65,37 @@ fun MainScreen(navController: NavController, viewModel: ShiftViewModel) {
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Иллюстрация курьера
             Image(
                 painter = painterResource(id = R.drawable.tired_courier),
-                contentDescription = "Courier Illustration",
+                contentDescription = null,
                 modifier = Modifier.size(260.dp),
                 contentScale = ContentScale.Fit
             )
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Основная кнопка выхода на смену
+            // ИСПРАВЛЕННАЯ ОПЕЧАТКА
             Button(
                 onClick = {
                     viewModel.startShift()
-                    // Навигация сработает через LaunchedEffect выше или принудительно здесь:
                     navController.navigate("active_shift")
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
+                modifier = Modifier.fillMaxWidth().height(52.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = purplePrimary),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Text(
-                    text = "ВЫЙТИ НА СМЕНУ",
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    fontSize = 16.sp
-                )
+                Text("ВЫЙТИ НА СМЕНУ", fontWeight = FontWeight.Bold, color = Color.White)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Кнопка приглашения
             Button(
-                onClick = {
-                    // Здесь можно добавить Intent.ACTION_SEND для шеринга
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
+                onClick = { /* Логика приглашения */ },
+                modifier = Modifier.fillMaxWidth().height(52.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = purplePrimary),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Text(
-                    text = "ПРИГЛАСИТЬ ДРУГА",
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    fontSize = 16.sp
-                )
+                Text("ПРИГЛАСИТЬ ДРУГА", fontWeight = FontWeight.Bold, color = Color.White)
             }
 
             Spacer(modifier = Modifier.height(40.dp))
