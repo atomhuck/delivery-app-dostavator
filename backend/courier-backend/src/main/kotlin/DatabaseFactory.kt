@@ -17,18 +17,17 @@ object DatabaseFactory {
 
             maximumPoolSize = 10
             isAutoCommit = false
-            transactionIsolation = "TRANSACTION_REPEATABLE_READ"
         }
 
         val dataSource = HikariDataSource(config)
         Database.connect(dataSource)
 
-        println("✅ Подключаемся к Neon PostgreSQL...")
+        println("✅ Подключение к Neon PostgreSQL...")
 
         transaction {
             SchemaUtils.createMissingTablesAndColumns(Couriers, Zones, Restaurants, Orders)
         }
 
-        println("✅ Успешно подключились к базе и синхронизировали таблицы!")
+        println("✅ Таблицы проверены/созданы успешно!")
     }
 }

@@ -3,7 +3,6 @@ package com.example
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.javatime.timestamp
 
-// Курьеры
 object Couriers : IntIdTable(name = "delivery.couriers") {
     val login = text("login").uniqueIndex()
     val passwordHash = text("password_hash")
@@ -11,14 +10,13 @@ object Couriers : IntIdTable(name = "delivery.couriers") {
     val isOnShift = bool("is_on_shift").default(false)
     val zoneId = integer("zone_id").nullable()
     val updatedAt = timestamp("updated_at")
+    val refferalLink = text("refferal_link")                    // ← добавили
 }
 
-// Зоны
 object Zones : IntIdTable(name = "delivery.zones") {
     val name = text("name").uniqueIndex()
 }
 
-// Рестораны
 object Restaurants : IntIdTable(name = "delivery.restaurants") {
     val name = text("name")
     val address = text("address")
@@ -27,7 +25,6 @@ object Restaurants : IntIdTable(name = "delivery.restaurants") {
     val createdAt = timestamp("created_at")
 }
 
-// Заказы — упростили items_json до text
 object Orders : IntIdTable(name = "delivery.orders") {
     val restaurantId = integer("restaurant_id").references(Restaurants.id)
     val courierId = integer("courier_id").references(Couriers.id).nullable()
@@ -37,7 +34,7 @@ object Orders : IntIdTable(name = "delivery.orders") {
 
     val deliveryAddress = text("delivery_address")
     val totalPrice = decimal("total_price", 10, 2)
-    val itemsJson = text("items_json").nullable()        // ← изменили на text
+    val itemsJson = text("items_json").nullable()
 
     val createdAt = timestamp("created_at")
     val acceptedAt = timestamp("accepted_at").nullable()
