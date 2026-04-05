@@ -30,6 +30,7 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderDetailsScreen(navController: NavController, viewModel: ShiftViewModel) {
+    // Берем текущий активный заказ из ViewModel
     val order = viewModel.currentActiveOrder ?: return
     var isPickedUp by remember { mutableStateOf(false) }
 
@@ -37,12 +38,14 @@ fun OrderDetailsScreen(navController: NavController, viewModel: ShiftViewModel) 
         listOf(Color(0xFFA357C6), Color(0xFF9139BA))
     )
 
+    // Блокируем системную кнопку "Назад", пока заказ в работе
     BackHandler(enabled = true) { /* Выход запрещен во время заказа */ }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(text = "Заказ №${order.id}", fontWeight = FontWeight.Bold) }
+                title = { Text(text = "Заказ №${order.id}", fontWeight = FontWeight.Bold) },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
             )
         }
     ) { padding ->
@@ -57,32 +60,32 @@ fun OrderDetailsScreen(navController: NavController, viewModel: ShiftViewModel) 
                 contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 260.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // ШАГ 1: ТОЧКА СБОРА (Ресторан) - Видна всегда
+                // ШАГ 1: ТОЧКА СБОРА (Ресторан) - Данные из объекта order
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(2.dp)
                     ) {
                         Row(
                             modifier = Modifier.padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Иконка ресторана как на скрине
                             Surface(
                                 modifier = Modifier.size(48.dp),
                                 color = Color(0xFFFFEDD5),
                                 shape = CircleShape
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    Text("🏠", fontSize = 20.sp) // Можно заменить на Icon(Icons.Default.Store)
+                                    Text("🏠", fontSize = 20.sp)
                                 }
                             }
                             Spacer(Modifier.width(12.dp))
                             Column {
-                                Text(text = "Пицца-Мастер", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                Text(text = "ул. Ленина, 45, Москва", color = Color.Gray, fontSize = 14.sp)
-                                Text(text = "📍 0.8 км", color = Color.Gray, fontSize = 12.sp)
+                                Text(text = order.restaurant, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                Text(text = "Точка сбора заказа", color = Color.Gray, fontSize = 12.sp)
+                                Text(text = "📍 ${order.distance} км", color = Color.Gray, fontSize = 12.sp)
                             }
                         }
                     }
@@ -94,12 +97,15 @@ fun OrderDetailsScreen(navController: NavController, viewModel: ShiftViewModel) 
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = Color.White),
-                            shape = RoundedCornerShape(16.dp)
+                            shape = RoundedCornerShape(16.dp),
+                            elevation = CardDefaults.cardElevation(2.dp)
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
-                                Text(text = "Иван", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                Text(text = "ул. Ленина, 45, Москва", color = Color.Gray, fontSize = 14.sp)
-                                Text(text = "📍 0.8 км", color = Color.Gray, fontSize = 12.sp)
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(text = "👤 Иван (Клиент)", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                }
+                                Spacer(Modifier.height(4.dp))
+                                Text(text = order.address, color = Color(0xFF374151), fontSize = 14.sp)
                             }
                         }
                     }
@@ -108,12 +114,13 @@ fun OrderDetailsScreen(navController: NavController, viewModel: ShiftViewModel) 
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = Color.White),
-                            shape = RoundedCornerShape(16.dp)
+                            shape = RoundedCornerShape(16.dp),
+                            elevation = CardDefaults.cardElevation(2.dp)
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
-                                Text(text = "Комментарий к курьеру", fontWeight = FontWeight.Bold)
+                                Text(text = "Комментарий к заказу", fontWeight = FontWeight.Bold, color = Color(0xFF9139BA))
                                 Spacer(Modifier.height(8.dp))
-                                Text(text = "Громко постучите, буду спать...", color = Color(0xFF4B5563))
+                                Text(text = "Громко постучите, буду спать...", color = Color(0xFF4B5563), fontSize = 14.sp)
                             }
                         }
                     }
@@ -124,7 +131,8 @@ fun OrderDetailsScreen(navController: NavController, viewModel: ShiftViewModel) 
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(2.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(text = "Состав заказа", fontWeight = FontWeight.Bold)
@@ -133,16 +141,16 @@ fun OrderDetailsScreen(navController: NavController, viewModel: ShiftViewModel) 
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text(text = "Пицца Маргарита", color = Color(0xFF374151))
+                                Text(text = "Пицца Маргарита 30см", color = Color(0xFF374151))
                                 Text(text = "×1", color = Color.Gray)
                             }
-                            Divider(Modifier.padding(vertical = 12.dp), color = Color(0xFFF3F4F6))
+                            HorizontalDivider(Modifier.padding(vertical = 12.dp), color = Color(0xFFF3F4F6))
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(text = "Сумма заказа:", fontWeight = FontWeight.SemiBold)
+                                Text(text = "К оплате:", fontWeight = FontWeight.SemiBold)
                                 Text(text = "350 ₽", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                             }
                         }
@@ -157,7 +165,7 @@ fun OrderDetailsScreen(navController: NavController, viewModel: ShiftViewModel) 
                     .padding(16.dp)
                     .fillMaxWidth()
             ) {
-                // Плашка дохода
+                // Плашка дохода (Градиентная)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -166,11 +174,14 @@ fun OrderDetailsScreen(navController: NavController, viewModel: ShiftViewModel) 
                         .padding(16.dp)
                 ) {
                     Column {
-                        Text(text = "Вы получите", color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
-                        Text(text = "${order.price} ₽", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        Text(text = "Ваш доход", color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
+                        Text(text = "${order.price} ₽", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Bold)
                     }
                     Box(
-                        modifier = Modifier.align(Alignment.CenterEnd).size(48.dp).background(Color.White.copy(alpha = 0.2f), CircleShape),
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .size(48.dp)
+                            .background(Color.White.copy(alpha = 0.2f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(text = "₽", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
@@ -179,7 +190,7 @@ fun OrderDetailsScreen(navController: NavController, viewModel: ShiftViewModel) 
 
                 Spacer(Modifier.height(16.dp))
 
-                // Свайпер
+                // Свайпер (Тот самый компонент)
                 SwipeButton(
                     text = if (isPickedUp) "Отдал заказ" else "Забрал заказ",
                     onSwipeComplete = {
@@ -187,8 +198,8 @@ fun OrderDetailsScreen(navController: NavController, viewModel: ShiftViewModel) 
                             isPickedUp = true
                         } else {
                             viewModel.completeOrder()
-                            navController.navigate("active_shift") {
-                                popUpTo("active_shift") { inclusive = true }
+                            navController.navigate("main") {
+                                popUpTo("main") { inclusive = true }
                             }
                         }
                     }
@@ -196,7 +207,7 @@ fun OrderDetailsScreen(navController: NavController, viewModel: ShiftViewModel) 
 
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    text = "Проведите вправо для подтверждения",
+                    text = "Подтвердите действие свайпом",
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     color = Color.Gray,
@@ -211,20 +222,21 @@ fun OrderDetailsScreen(navController: NavController, viewModel: ShiftViewModel) 
 fun SwipeButton(text: String, onSwipeComplete: () -> Unit) {
     val density = LocalDensity.current
     var widthPx by remember { mutableStateOf(0f) }
-    val handleSize = 48.dp
+    val handleSize = 50.dp
     val handleSizePx = with(density) { handleSize.toPx() }
     var offsetX by remember { mutableStateOf(0f) }
 
+    // Сбрасываем положение ползунка при смене текста кнопки
     LaunchedEffect(text) { offsetX = 0f }
 
-    val swipeLimit = (widthPx - handleSizePx - with(density) { 8.dp.toPx() }).coerceAtLeast(0f)
+    val swipeLimit = (widthPx - handleSizePx - with(density) { 16.dp.toPx() }).coerceAtLeast(0f)
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(64.dp) // Чуть выше для соответствия стилю
+            .height(64.dp)
             .background(Color(0xFFF3F4F6), CircleShape)
-            .padding(8.dp)
+            .padding(6.dp)
             .onGloballyPositioned { widthPx = it.size.width.toFloat() }
     ) {
         Text(
@@ -232,14 +244,14 @@ fun SwipeButton(text: String, onSwipeComplete: () -> Unit) {
             modifier = Modifier.align(Alignment.Center),
             color = Color(0xFF4B5563),
             fontSize = 16.sp,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Bold
         )
 
         Box(
             modifier = Modifier
                 .offset { IntOffset(offsetX.roundToInt(), 0) }
                 .size(handleSize)
-                .shadow(4.dp, CircleShape)
+                .shadow(6.dp, CircleShape)
                 .background(Color(0xFF9139BA), CircleShape)
                 .draggable(
                     orientation = Orientation.Horizontal,
@@ -257,7 +269,7 @@ fun SwipeButton(text: String, onSwipeComplete: () -> Unit) {
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = "→", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(text = "→", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
         }
     }
 }

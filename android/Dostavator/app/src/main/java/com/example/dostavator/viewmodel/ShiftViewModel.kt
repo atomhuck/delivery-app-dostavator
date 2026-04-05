@@ -9,6 +9,7 @@ import androidx.lifecycle.AndroidViewModel
 // Исправлено: price теперь Int, distance — Double (как в твоем оригинале)
 data class OrderItem(
     val id: String,
+    val restaurant: String, // Добавляем это поле
     val address: String,
     val price: Int,
     val distance: Double,
@@ -58,9 +59,9 @@ class ShiftViewModel(application: Application) : AndroidViewModel(application) {
         _availableOrders.clear()
         _availableOrders.addAll(
             listOf(
-                OrderItem("#1245", "ул. Ленина, 45", 550, 1.2),
-                OrderItem("#1246", "пр. Мира, 128", 720, 2.1),
-                OrderItem("#1247", "ул. Гагарина, 8", 430, 0.8)
+                OrderItem("#1245", "Пицца-Мастер", "ул. Ленина, 45", 550, 1.2),
+                OrderItem("#1246", "Бургер Клаб", "пр. Мира, 128", 720, 2.1),
+                OrderItem("#1247", "Суши Вок", "ул. Гагарина, 8", 430, 0.8)
             )
         )
     }

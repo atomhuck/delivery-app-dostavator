@@ -2,41 +2,42 @@ package com.example
 
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Application.configureRouting() {
     routing {
-
-        get("/") {
-            call.respondText("✅ Сервер работает! Готов к хакатону", ContentType.Text.Plain)
-        }
-
-        // === Очень простой вариант без сложных строк ===
-        get("/api/courier/me") {
-            call.respondText("""{"earnedToday":2450,"onShift":true,"message":"Заработано сегодня"}""", ContentType.Application.Json)
-        }
-
-        get("/api/orders/available") {
-            call.respondText("""[{"id":"1093-293","restaurant":"Los Pollos & More","cost":300,"distance":1.2,"time":"21:15"},{"id":"1093-294","restaurant":"Суши Wok","cost":450,"distance":0.8,"time":"21:20"}]""", ContentType.Application.Json)
-        }
-
         post("/api/auth/login") {
-            call.respondText("""{"token":"fake-jwt-token-12345","courierId":"1","name":"Иван Иванов"}""", ContentType.Application.Json)
-        }
+            try {
+                val request = call.receive<LoginRequest>()
 
-        get("/api/orders/{id}") {
-            val id = call.parameters["id"] ?: "unknown"
-            call.respondText("""{"id":"$id","restaurant":"Los Pollos & More","cost":300,"distance":1.2}""", ContentType.Application.Json)
-        }
+                val courier = transaction {
+                    Couriers.select { Couriers.login eq request.login }.singleOrNull()
+                }
 
-        post("/api/courier/shift") {
-            call.respondText("""{"status":"ok","onShift":true}""", ContentType.Application.Json)
-        }
-
-        post("/api/orders/{id}/accept") {
-            val id = call.parameters["id"] ?: ""
-            call.respondText("""{"status":"ok","message":"Заказ $id принят"}""", ContentType.Application.Json)
+                if (courier != null && courier[Couriers.passwordHash] == request.password) {
+                    // Используем объект LoginResponse вместо mapOf
+                    call.respond(LoginResponse(
+                        success = true,
+                        token = "fake-jwt-token-123",
+                        name = courier[Couriers.fullName] ?: "Курьер"
+                    ))
+                } else {
+                    call.respond(HttpStatusCode.Unauthorized, LoginResponse(
+                        success = false,
+                        message = "Неверный логин или пароль"
+                    ))
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                call.respond(HttpStatusCode.InternalServerError, LoginResponse(
+                    success = false,
+                    message = "Ошибка сервера: ${e.localizedMessage}"
+                ))
+            }
         }
     }
 }

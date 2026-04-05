@@ -4,7 +4,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -16,27 +15,38 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.dostavator.viewmodel.AuthState
+import com.example.dostavator.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AuthScreen(onLoginSuccess: () -> Unit) {
+fun AuthScreen(navController: NavController, viewModel: AuthViewModel) {
     var id by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
 
-    // Текст ошибки
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    // Твой оригинальный стейт ошибки заменяем на стейт из ViewModel
+    val authState by viewModel.authState.collectAsState()
 
     val purplePrimary = Color(0xFF9139BA)
-    val purpleLight = Color(0xFFDBC0E8)
     val blackText = Color(0xFF000000)
     val blackText35 = Color(0x59000000)
     val errorColor = Color(0xFFD32F2F)
+
+    // Обработка успешного входа
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Success) {
+            navController.navigate("main") {
+                popUpTo("auth") { inclusive = true }
+            }
+            viewModel.resetState()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -64,7 +74,6 @@ fun AuthScreen(onLoginSuccess: () -> Unit) {
         ) {
             Spacer(modifier = Modifier.height(80.dp))
 
-            // Логотип Доставатор (Жирный)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "Доста", fontSize = 30.sp, fontWeight = FontWeight.Black, color = blackText)
                 Text(text = "ватор", fontSize = 30.sp, fontWeight = FontWeight.Black, color = purplePrimary)
@@ -74,21 +83,16 @@ fun AuthScreen(onLoginSuccess: () -> Unit) {
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Вход (Жирный)
             Text(text = "Вход", fontSize = 25.sp, fontWeight = FontWeight.Black, color = blackText)
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Поле ID
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(text = "ID", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = blackText)
                 Spacer(modifier = Modifier.height(4.dp))
                 OutlinedTextField(
                     value = id,
-                    onValueChange = {
-                        id = it
-                        errorMessage = null
-                    },
+                    onValueChange = { id = it },
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     placeholder = {
                         Text(text = "Введите ID", color = blackText35, fontSize = 14.sp, fontWeight = FontWeight.Medium)
@@ -104,16 +108,12 @@ fun AuthScreen(onLoginSuccess: () -> Unit) {
 
             Spacer(modifier = Modifier.height(25.dp))
 
-            // Поле Password
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(text = "Password", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = blackText)
                 Spacer(modifier = Modifier.height(4.dp))
                 OutlinedTextField(
                     value = password,
-                    onValueChange = {
-                        password = it
-                        errorMessage = null
-                    },
+                    onValueChange = { password = it },
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     placeholder = {
                         Text(text = "Введите пароль", color = blackText35, fontSize = 14.sp, fontWeight = FontWeight.Medium)
@@ -137,16 +137,16 @@ fun AuthScreen(onLoginSuccess: () -> Unit) {
                 )
             }
 
-            // Динамический вывод ошибки
+            // Динамический вывод ошибки из ViewModel
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(45.dp), // Фиксированная высота, чтобы кнопка не прыгала
+                    .height(45.dp),
                 contentAlignment = Alignment.Center
             ) {
-                if (errorMessage != null) {
+                if (authState is AuthState.Error) {
                     Text(
-                        text = errorMessage!!,
+                        text = (authState as AuthState.Error).message,
                         color = errorColor,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
@@ -154,27 +154,21 @@ fun AuthScreen(onLoginSuccess: () -> Unit) {
                 }
             }
 
-            // Кнопка ВХОД
-            Button(
-                onClick = {
-                    when {
-                        id.isBlank() -> errorMessage = "Введите ID"
-                        password.isBlank() -> errorMessage = "Введите пароль"
-                        id == "123" && password == "123" -> {
-                            errorMessage = null
-                            onLoginSuccess()
-                        }
-                        else -> errorMessage = "Неверный ID или пароль"
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .shadow(8.dp, RoundedCornerShape(8.dp), ambientColor = purplePrimary, spotColor = purplePrimary),
-                colors = ButtonDefaults.buttonColors(containerColor = purplePrimary),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text(text = "ВХОД", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            // Кнопка ВХОД с индикатором загрузки
+            if (authState is AuthState.Loading) {
+                CircularProgressIndicator(color = purplePrimary)
+            } else {
+                Button(
+                    onClick = { viewModel.login(id, password) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .shadow(8.dp, RoundedCornerShape(8.dp), ambientColor = purplePrimary, spotColor = purplePrimary),
+                    colors = ButtonDefaults.buttonColors(containerColor = purplePrimary),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(text = "ВХОД", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                }
             }
         }
     }
