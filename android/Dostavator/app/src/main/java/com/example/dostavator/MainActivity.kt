@@ -19,21 +19,44 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             val shiftViewModel: ShiftViewModel = viewModel()
 
-            // Проверяем статус при запуске: если залогинен — идем в main, если нет — в auth
             val startDestination = if (shiftViewModel.isLoggedIn) "main" else "auth"
 
             NavHost(navController = navController, startDestination = startDestination) {
+                // 1. Авторизация
                 composable("auth") {
                     AuthScreen(onLoginSuccess = {
-                        shiftViewModel.login() // Сохраняем вход в SharedPreferences
+                        shiftViewModel.login()
                         navController.navigate("main") {
                             popUpTo("auth") { inclusive = true }
                         }
                     })
                 }
-                composable("main") { MainScreen(navController, shiftViewModel) }
-                composable("active_shift") { ActiveShiftScreen(navController, shiftViewModel) }
-                composable("profile") { ProfileScreen(navController, shiftViewModel) }
+
+                // 2. Главный экран (Где кнопка "Выйти на смену")
+                composable("main") {
+                    MainScreen(navController, shiftViewModel)
+                }
+
+                // 3. ИСПРАВЛЕНО: Добавлен экран активной смены (Список заказов)
+                // Без этого блока вылетало при нажатии "Выйти на смену"
+                composable("active_shift") {
+                    ActiveShiftScreen(navController, shiftViewModel)
+                }
+
+                // 4. Профиль (Настройки)
+                composable("profile") {
+                    ProfileScreen(navController, shiftViewModel)
+                }
+
+                // 5. Архив (Отдельный экран истории)
+                composable("archive") {
+                    ArchiveScreen(navController, shiftViewModel)
+                }
+
+                // 6. Детали заказа
+                composable("order_details") {
+                    OrderDetailsScreen(navController, shiftViewModel)
+                }
             }
         }
     }

@@ -60,62 +60,117 @@ fun ProfileScreen(navController: NavController, viewModel: ShiftViewModel) {
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Профиль", fontWeight = FontWeight.Bold) },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = bgColor)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
             )
         },
         bottomBar = {
-            BottomNavigationBar(selectedTab = 1, onTabSelected = { if (it == 0) navController.navigate("main") })
+            BottomNavigationBar(selectedTab = 1, onTabSelected = { index ->
+                if (index == 0) navController.navigate("active_shift")
+            })
         }
     ) { padding ->
         Column(
-            modifier = Modifier.fillMaxSize().background(bgColor).padding(padding).padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(bgColor)
+                .padding(padding)
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState()), // Добавил скролл на случай маленьких экранов
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Box(modifier = Modifier.size(100.dp).border(2.dp, Color(0xFFE5E7EB), CircleShape)) {
+            // Аватарка
+            Box(modifier = Modifier.size(100.dp)) {
                 if (viewModel.profileImageUri != null) {
-                    AsyncImage(model = viewModel.profileImageUri, contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape), contentScale = ContentScale.Crop)
+                    AsyncImage(
+                        model = viewModel.profileImageUri,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                            .border(2.dp, Color(0xFFE5E7EB), CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
                 } else {
-                    Image(painter = painterResource(R.drawable.avatar_placeholder), contentDescription = null, modifier = Modifier.fillMaxSize().clip(CircleShape), contentScale = ContentScale.Crop)
+                    Image(
+                        painter = painterResource(R.drawable.avatar_placeholder),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize().clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
                 }
             }
 
-            Text("изм.", modifier = Modifier.clickable { photoPicker.launch("image/*") }.padding(8.dp), color = Color.Gray, fontSize = 12.sp)
-            Text(viewModel.userName, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-            Text("Привет, курьер! Пора выполнять\nзаказы", textAlign = TextAlign.Center, color = Color.Gray, modifier = Modifier.padding(vertical = 8.dp))
+            Text(
+                text = "изм.",
+                modifier = Modifier.clickable { photoPicker.launch("image/*") }.padding(8.dp),
+                color = Color(0xFF9139BA),
+                fontSize = 12.sp
+            )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Text(viewModel.userName, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = "Привет, курьер! Пора выполнять\nзаказы",
+                textAlign = TextAlign.Center,
+                color = Color.Gray,
+                lineHeight = 20.sp,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
 
-            ProfileItem("Архив") {}
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // ПУНКТЫ МЕНЮ
+            ProfileItem("Архив") {
+                navController.navigate("archive")
+            }
+
             ProfileItem("Реквизиты: ${viewModel.paymentDetails}", "(изм)") {
                 tempDetails = viewModel.paymentDetails
                 showEditDialog = true
             }
-            ProfileItem("Пригласить друга") {}
+
+            ProfileItem("Пригласить друга") { /* Логика */ }
 
             ProfileItem("Выйти") {
                 viewModel.logout()
                 navController.navigate("auth") {
-                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
-                    launchSingleTop = true
+                    popUpTo(0) { inclusive = true }
                 }
             }
         }
     }
 }
 
+// ВОТ ЭТА ФУНКЦИЯ БЫЛА ПРОПУЩЕНА:
 @Composable
 fun ProfileItem(text: String, suffix: String = "", onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp).clickable { onClick() },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+            .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(1.dp)
     ) {
-        Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(text, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
-            if (suffix.isNotEmpty()) Text(" $suffix", color = Color.Gray, fontSize = 16.sp)
+        Row(
+            modifier = Modifier.padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = text,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.weight(1f)
+            )
+            if (suffix.isNotEmpty()) {
+                Text(
+                    text = suffix,
+                    color = Color(0xFF9139BA),
+                    fontSize = 16.sp
+                )
+            }
         }
     }
 }

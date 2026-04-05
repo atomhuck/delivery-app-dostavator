@@ -31,7 +31,13 @@ fun ActiveShiftScreen(navController: NavController, viewModel: ShiftViewModel) {
     Scaffold(
         bottomBar = {
             BottomNavigationBar(selectedTab = 0, onTabSelected = { index ->
-                if (index == 1) navController.navigate("profile")
+                if (index == 1) {
+                    navController.navigate("profile") {
+                        popUpTo("active_shift") { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             })
         }
     ) { padding ->
@@ -40,7 +46,6 @@ fun ActiveShiftScreen(navController: NavController, viewModel: ShiftViewModel) {
                 modifier = Modifier.weight(1f).fillMaxWidth(),
                 contentPadding = PaddingValues(16.dp)
             ) {
-                // Блок статистики сверху
                 item {
                     Card(
                         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -65,7 +70,6 @@ fun ActiveShiftScreen(navController: NavController, viewModel: ShiftViewModel) {
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                // ПОЛЕ ПОИСКА С АНИМАЦИЕЙ (ВЕРНУЛ)
                 item {
                     OutlinedTextField(
                         value = "",
@@ -87,7 +91,6 @@ fun ActiveShiftScreen(navController: NavController, viewModel: ShiftViewModel) {
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                // ЛОГИКА "ПОКА ПУСТО"
                 if (viewModel.availableOrders.isEmpty()) {
                     item {
                         Box(
@@ -98,14 +101,21 @@ fun ActiveShiftScreen(navController: NavController, viewModel: ShiftViewModel) {
                         }
                     }
                 } else {
-                    items(viewModel.availableOrders) { order ->
-                        OrderCard(order = order, onAcceptClick = { viewModel.acceptOrder(order) })
+                    // ИСПРАВЛЕНИЕ ЗДЕСЬ: Добавили key = { it.id } для стабильности LazyColumn
+                    items(
+                        items = viewModel.availableOrders,
+                        key = { it.id }
+                    ) { order ->
+                        OrderCard(order = order, onAcceptClick = {
+                            // ИСПРАВЛЕНИЕ ЗДЕСЬ: Сначала переходим на экран, потом обновляем данные
+                            navController.navigate("order_details")
+                            viewModel.acceptOrder(order)
+                        })
                         Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
             }
 
-            // Кнопка завершения
             Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                 Button(
                     onClick = {
@@ -149,8 +159,9 @@ fun OrderCard(order: OrderItem, onAcceptClick: () -> Unit) {
                     Icon(Icons.Default.LocationOn, null, tint = Color.Gray, modifier = Modifier.size(16.dp))
                     Text(text = "${order.distance} км", color = Color.Gray, fontSize = 14.sp)
                 }
+
                 Button(
-                    onClick = onAcceptClick,
+                    onClick = { onAcceptClick() },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9139BA)),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -172,7 +183,7 @@ fun SlowJumpingDots(color: Color) {
                 animation = keyframes {
                     durationMillis = 1200
                     0f at 0
-                    -4f at 300 // Прыжок вверх
+                    -4f at 300
                     0f at 600
                 },
                 initialStartOffset = StartOffset(index * 200)
