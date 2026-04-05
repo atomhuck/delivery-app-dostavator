@@ -49,5 +49,5 @@ Password: 123
 
 Android — @atomhuck
 Backend — @Seferaki 
-Дизайн — sarattova
-БД — asemenov2004
+Designer — @sarattova
+Data-engenier — @asemenov2004
